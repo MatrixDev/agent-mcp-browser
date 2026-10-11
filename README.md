@@ -1,5 +1,10 @@
 # agent-mcp-browser
 
+[<video src="example.mp4" controls width="600">
+  Your browser does not support the video tag.
+</video>
+](https://github.com/user-attachments/assets/f149562c-2ad9-4f9a-af33-35363b41d868)
+
 Launches a Chrome instance and exposes the tabs you pick to AI agents over MCP.
 
 The MCP server (streamable HTTP on a random local port) starts together with Chrome. A terminal UI lists open tabs and
