@@ -123,14 +123,8 @@ impl TabPicker {
             entry.label = entry.tab.title().await;
         }
 
-        let mut should_publish = false;
-        for (_, entry) in self.entries.extract_if(.., |_, e| e.marked_for_removal) {
-            should_publish |= entry.selected;
-        }
-
-        if should_publish {
-            self.publish();
-        }
+        self.entries.retain(|_, e| !e.marked_for_removal);
+        self.publish();
         Ok(())
     }
 
