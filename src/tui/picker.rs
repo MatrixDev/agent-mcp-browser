@@ -1,5 +1,6 @@
 use crate::browser::{Chrome, ChromeTab};
 use crate::context::Context;
+use crate::tui::notice::Notice;
 use crate::tui::{STYLE_BG_TEXT, STYLE_HIGHLIGHT, STYLE_SELECTION};
 use chromiumoxide::cdp::browser_protocol::target::TargetId;
 use futures::StreamExt;
@@ -13,6 +14,7 @@ use std::time::Duration;
 use tokio::select;
 use tokio::time::MissedTickBehavior;
 
+////////////////////////////////////////////////////////////////////////////////
 const REFRESH_EVERY: Duration = Duration::from_secs(1);
 const HOTKEYS: [(&str, &str); 5] = [
     ("↑↓", "prev/next"),
@@ -28,7 +30,7 @@ pub struct TabPicker {
     mcp_url: String,
     entries: IndexMap<TargetId, TabEntry>,
     list_state: ListState,
-    header_note: Option<String>,
+    header_note: Notice,
 }
 
 struct TabEntry {
@@ -46,7 +48,7 @@ impl TabPicker {
             mcp_url,
             entries: Default::default(),
             list_state: Default::default(),
-            header_note: None,
+            header_note: Default::default(),
         }
     }
 
@@ -89,7 +91,6 @@ impl TabPicker {
             return Ok(ControlFlow::Continue(()));
         }
 
-        self.header_note = None;
         match key.code {
             KeyCode::Up => self.list_state.select_previous(),
             KeyCode::Down => self.list_state.select_next(),
@@ -175,7 +176,7 @@ impl TabPicker {
             Ok(()) => "Launch command copied to clipboard".to_owned(),
             Err(e) => format!("Failed to copy launch command: {e}"),
         };
-        self.header_note = Some(note);
+        self.header_note.show(note);
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +205,11 @@ impl TabPicker {
             Span::raw(" "),
         ]);
 
-        let block = Block::bordered().title(title);
+        let mut block = Block::bordered().title(title);
+        if let Some(note) = self.header_note.text() {
+            block = block.title_bottom(Span::styled(format!(" {note} "), STYLE_HIGHLIGHT));
+        }
+
         let list = List::new(items).block(block).highlight_style(STYLE_SELECTION);
 
         frame.render_stateful_widget(list, area, &mut self.list_state);
@@ -222,7 +227,6 @@ impl TabPicker {
             separator = " | ";
         }
 
-        // https://webquiz.net/movie/1002067-modern-disney-animation-/play
         let block = Block::bordered().title(" Hotkeys ");
         let hotkeys = Paragraph::new(Line::from(spans)).block(block);
 

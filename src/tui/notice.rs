@@ -1,0 +1,23 @@
+use std::time::{Duration, Instant};
+
+////////////////////////////////////////////////////////////////////////////////
+const SHOW_FOR: Duration = Duration::from_secs(1);
+
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Default)]
+pub struct Notice {
+    shown: Option<(String, Instant)>,
+}
+
+impl Notice {
+    ////////////////////////////////////////////////////////////////////////////////
+    pub fn show(&mut self, text: String) {
+        self.shown = Some((text, Instant::now()));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    pub fn text(&mut self) -> Option<&str> {
+        self.shown.take_if(|e| e.1.elapsed() >= SHOW_FOR);
+        self.shown.as_ref().map(|e| e.0.as_str())
+    }
+}
