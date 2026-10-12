@@ -190,11 +190,12 @@ impl TabPicker {
     ////////////////////////////////////////////////////////////////////////////////
     fn draw_tabs(&mut self, frame: &mut Frame, area: Rect) {
         let items = self.entries.values().map(|e| {
-            let mark = match e.selected {
-                true => "[x]",
-                false => "[ ]",
-            };
-            format!("{mark} {}", e.label)
+            Line::default().spans([
+                Span::raw("["),
+                Span::styled(if e.selected { "+" } else { " " }, STYLE_HIGHLIGHT),
+                Span::raw("] "),
+                Span::raw(&e.label),
+            ])
         });
 
         let title = Line::default().spans([
